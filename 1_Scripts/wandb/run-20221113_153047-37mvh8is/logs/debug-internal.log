@@ -1,0 +1,21 @@
+2022-11-13 15:30:47,587 INFO    StreamThr :5336 [internal.py:wandb_internal():88] W&B internal server running at pid: 5336, started at: 2022-11-13 15:30:47.587461
+2022-11-13 15:30:47,589 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: status
+2022-11-13 15:30:47,592 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: status
+2022-11-13 15:30:47,601 DEBUG   SenderThread:5336 [sender.py:send():303] send: header
+2022-11-13 15:30:47,601 INFO    WriterThread:5336 [datastore.py:open_for_write():75] open: g:\KAGGLE\025_Kaggle-OTTO Recsys-2022\1_Scripts\wandb\run-20221113_153047-37mvh8is\run-37mvh8is.wandb
+2022-11-13 15:30:47,637 DEBUG   SenderThread:5336 [sender.py:send():303] send: run
+2022-11-13 15:30:48,098 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: check_version
+2022-11-13 15:30:48,100 INFO    SenderThread:5336 [dir_watcher.py:__init__():216] watching files in: g:\KAGGLE\025_Kaggle-OTTO Recsys-2022\1_Scripts\wandb\run-20221113_153047-37mvh8is\files
+2022-11-13 15:30:48,100 INFO    SenderThread:5336 [sender.py:_start_run_threads():928] run started: 37mvh8is with start time 1668349847.58546
+2022-11-13 15:30:48,100 DEBUG   SenderThread:5336 [sender.py:send():303] send: summary
+2022-11-13 15:30:48,100 INFO    SenderThread:5336 [sender.py:_save_file():1171] saving file wandb-summary.json with policy end
+2022-11-13 15:30:48,101 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: check_version
+2022-11-13 15:30:48,157 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: run_start
+2022-11-13 15:30:48,190 DEBUG   HandlerThread:5336 [meta.py:__init__():34] meta init
+2022-11-13 15:30:48,190 DEBUG   HandlerThread:5336 [meta.py:__init__():49] meta init done
+2022-11-13 15:30:48,190 DEBUG   HandlerThread:5336 [meta.py:probe():215] probe
+2022-11-13 15:30:48,205 DEBUG   HandlerThread:5336 [meta.py:_setup_git():205] setup git
+2022-11-13 15:30:48,269 DEBUG   HandlerThread:5336 [meta.py:_setup_git():212] setup git done
+2022-11-13 15:30:48,269 DEBUG   HandlerThread:5336 [meta.py:_save_pip():53] save pip
+2022-11-13 15:30:48,270 DEBUG   HandlerThread:5336 [meta.py:_save_pip():67] save pip done
+2022-11-13 15:30:48,270 DEBUG   HandlerThread:5336 [meta.py:_save_conda():74] save conda
