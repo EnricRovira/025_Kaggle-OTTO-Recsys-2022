@@ -222,3 +222,5 @@
 2022-11-13 15:35:47,797 DEBUG   SenderThread:5336 [sender.py:send():303] send: stats
 2022-11-13 15:35:53,884 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: stop_status
 2022-11-13 15:35:53,884 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: stop_status
+2022-11-13 15:36:09,087 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: stop_status
+2022-11-13 15:36:09,087 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: stop_status
