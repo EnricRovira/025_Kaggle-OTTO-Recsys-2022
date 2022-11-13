@@ -224,3 +224,79 @@
 2022-11-13 15:35:53,884 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: stop_status
 2022-11-13 15:36:09,087 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: stop_status
 2022-11-13 15:36:09,087 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: stop_status
+2022-11-13 15:36:20,923 DEBUG   SenderThread:5336 [sender.py:send():303] send: stats
+2022-11-13 15:36:24,297 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: stop_status
+2022-11-13 15:36:24,297 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: stop_status
+2022-11-13 15:36:39,520 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: stop_status
+2022-11-13 15:36:39,520 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: stop_status
+2022-11-13 15:36:53,851 DEBUG   SenderThread:5336 [sender.py:send():303] send: stats
+2022-11-13 15:36:54,706 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: stop_status
+2022-11-13 15:36:54,706 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: stop_status
+2022-11-13 15:37:02,464 DEBUG   SenderThread:5336 [sender.py:send():303] send: telemetry
+2022-11-13 15:37:02,464 DEBUG   SenderThread:5336 [sender.py:send():303] send: exit
+2022-11-13 15:37:02,465 INFO    SenderThread:5336 [sender.py:send_exit():442] handling exit code: 0
+2022-11-13 15:37:02,465 INFO    SenderThread:5336 [sender.py:send_exit():444] handling runtime: 139
+2022-11-13 15:37:02,465 INFO    SenderThread:5336 [sender.py:_save_file():1171] saving file wandb-summary.json with policy end
+2022-11-13 15:37:02,465 INFO    SenderThread:5336 [sender.py:send_exit():450] send defer
+2022-11-13 15:37:02,466 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: defer
+2022-11-13 15:37:02,466 INFO    HandlerThread:5336 [handler.py:handle_request_defer():161] handle defer: 0
+2022-11-13 15:37:02,466 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: defer
+2022-11-13 15:37:02,466 INFO    SenderThread:5336 [sender.py:send_request_defer():459] handle sender defer: 0
+2022-11-13 15:37:02,466 INFO    SenderThread:5336 [sender.py:transition_state():463] send defer: 1
+2022-11-13 15:37:02,467 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: defer
+2022-11-13 15:37:02,467 INFO    HandlerThread:5336 [handler.py:handle_request_defer():161] handle defer: 1
+2022-11-13 15:37:02,577 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: defer
+2022-11-13 15:37:02,578 INFO    SenderThread:5336 [sender.py:send_request_defer():459] handle sender defer: 1
+2022-11-13 15:37:02,578 INFO    SenderThread:5336 [sender.py:transition_state():463] send defer: 2
+2022-11-13 15:37:02,578 DEBUG   SenderThread:5336 [sender.py:send():303] send: stats
+2022-11-13 15:37:02,578 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: defer
+2022-11-13 15:37:02,578 INFO    HandlerThread:5336 [handler.py:handle_request_defer():161] handle defer: 2
+2022-11-13 15:37:02,578 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: defer
+2022-11-13 15:37:02,578 INFO    SenderThread:5336 [sender.py:send_request_defer():459] handle sender defer: 2
+2022-11-13 15:37:02,578 INFO    SenderThread:5336 [sender.py:transition_state():463] send defer: 3
+2022-11-13 15:37:02,579 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: defer
+2022-11-13 15:37:02,579 INFO    HandlerThread:5336 [handler.py:handle_request_defer():161] handle defer: 3
+2022-11-13 15:37:02,579 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: defer
+2022-11-13 15:37:02,579 INFO    SenderThread:5336 [sender.py:send_request_defer():459] handle sender defer: 3
+2022-11-13 15:37:02,579 INFO    SenderThread:5336 [sender.py:transition_state():463] send defer: 4
+2022-11-13 15:37:02,579 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: defer
+2022-11-13 15:37:02,579 INFO    HandlerThread:5336 [handler.py:handle_request_defer():161] handle defer: 4
+2022-11-13 15:37:02,580 DEBUG   SenderThread:5336 [sender.py:send():303] send: summary
+2022-11-13 15:37:02,580 INFO    SenderThread:5336 [sender.py:_save_file():1171] saving file wandb-summary.json with policy end
+2022-11-13 15:37:02,580 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: defer
+2022-11-13 15:37:02,580 INFO    SenderThread:5336 [sender.py:send_request_defer():459] handle sender defer: 4
+2022-11-13 15:37:02,580 INFO    SenderThread:5336 [sender.py:transition_state():463] send defer: 5
+2022-11-13 15:37:02,581 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: defer
+2022-11-13 15:37:02,581 INFO    HandlerThread:5336 [handler.py:handle_request_defer():161] handle defer: 5
+2022-11-13 15:37:02,581 DEBUG   SenderThread:5336 [sender.py:send_request():317] send_request: defer
+2022-11-13 15:37:02,581 INFO    SenderThread:5336 [sender.py:send_request_defer():459] handle sender defer: 5
+2022-11-13 15:37:02,764 ERROR   SenderThread:5336 [internal_api.py:execute():216] 409 response executing GraphQL.
+2022-11-13 15:37:02,764 ERROR   SenderThread:5336 [internal_api.py:execute():217] {"errors":[{"message":"run enric1296/otto-recsys/1um5zijt was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2022-11-13 15:37:02,931 INFO    Thread-39 :5336 [dir_watcher.py:_on_file_modified():292] file/dir modified: g:\KAGGLE\025_Kaggle-OTTO Recsys-2022\1_Scripts\wandb\run-20221113_153438-1um5zijt\files\wandb-summary.json
+2022-11-13 15:37:03,466 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-13 15:37:04,019 ERROR   SenderThread:5336 [internal_api.py:execute():216] 409 response executing GraphQL.
+2022-11-13 15:37:04,022 ERROR   SenderThread:5336 [internal_api.py:execute():217] {"errors":[{"message":"run enric1296/otto-recsys/1um5zijt was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2022-11-13 15:37:06,676 ERROR   SenderThread:5336 [internal_api.py:execute():216] 409 response executing GraphQL.
+2022-11-13 15:37:06,676 ERROR   SenderThread:5336 [internal_api.py:execute():217] {"errors":[{"message":"run enric1296/otto-recsys/1um5zijt was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2022-11-13 15:37:06,676 ERROR   SenderThread:5336 [retry.py:__call__():154] Retry attempt failed:
+Traceback (most recent call last):
+  File "c:\Users\Enric\anaconda3\lib\site-packages\wandb\sdk\lib\retry.py", line 113, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "c:\Users\Enric\anaconda3\lib\site-packages\wandb\sdk\internal\internal_api.py", line 213, in execute
+    return self.client.execute(*args, **kwargs)  # type: ignore
+  File "c:\Users\Enric\anaconda3\lib\site-packages\wandb\vendor\gql-0.2.0\wandb_gql\client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "c:\Users\Enric\anaconda3\lib\site-packages\wandb\vendor\gql-0.2.0\wandb_gql\client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "c:\Users\Enric\anaconda3\lib\site-packages\wandb\vendor\gql-0.2.0\wandb_gql\transport\requests.py", line 39, in execute
+    request.raise_for_status()
+  File "c:\Users\Enric\anaconda3\lib\site-packages\requests\models.py", line 953, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 409 Client Error: Conflict for url: https://api.wandb.ai/graphql
+2022-11-13 15:37:08,505 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: keepalive
+2022-11-13 15:37:11,074 ERROR   SenderThread:5336 [internal_api.py:execute():216] 409 response executing GraphQL.
+2022-11-13 15:37:11,074 ERROR   SenderThread:5336 [internal_api.py:execute():217] {"errors":[{"message":"run enric1296/otto-recsys/1um5zijt was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2022-11-13 15:37:13,545 DEBUG   HandlerThread:5336 [handler.py:handle_request():138] handle_request: keepalive
+2022-11-13 15:37:17,723 INFO    WriterThread:5336 [datastore.py:close():279] close: g:\KAGGLE\025_Kaggle-OTTO Recsys-2022\1_Scripts\wandb\run-20221113_153438-1um5zijt\run-1um5zijt.wandb
+2022-11-13 15:37:21,258 ERROR   SenderThread:5336 [internal_api.py:execute():216] 409 response executing GraphQL.
+2022-11-13 15:37:21,258 ERROR   SenderThread:5336 [internal_api.py:execute():217] {"errors":[{"message":"run enric1296/otto-recsys/1um5zijt was previously created and deleted; try a new run name","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
