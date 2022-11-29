@@ -139,7 +139,7 @@ class ModelBert4Rec(tf.keras.models.Model):
 
     def create_masks(self, x_seq_past, pad_mask):   
         size = self.model_cfg.seq_len
-        look_ahead_mask = tf.linalg.band_part(tf.ones((1, size, size), tf.float32), -1, 0) * pad_mask[:, 0, 0, :]
+        look_ahead_mask = tf.linalg.band_part(tf.ones((1, size, size), tf.float32), -1, 0) * pad_mask[:, 0, 0, :, tf.newaxis]
         return look_ahead_mask#, pad_mask
       
 
