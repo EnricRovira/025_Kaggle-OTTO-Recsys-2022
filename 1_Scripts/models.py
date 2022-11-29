@@ -111,13 +111,16 @@ class ModelBert4Rec(tf.keras.models.Model):
                                                                drop_rate=model_cfg.drop_rate, 
                                                                att_drop_rate=model_cfg.att_drop_rate) 
                                        for _ in range(model_cfg.num_layers)]
-        # policy = mixed_precision.Policy('float32')
         self.pred_layer = EmbeddingTransposed(tied_to=self.embed_items, activation='linear', dtype='float32')
 
         
     def call(self, inputs, training=True):
         x_seq_past, x_seq_type, x_seq_encoding, x_seq_recency = inputs
-        pad_mask = tf.cast(tf.where(tf.equal(x_seq_type, 0), 0, 1), tf.float32)
+        pad_mask = tf.cast(tf.where(tf.equal(x_seq_type[:, :, 0], 0), 0, 1), tf.float32)[:, tf.newaxis, tf.newaxis, :]
+        if self.model_cfg.model_arch == 'sasrec':
+            mask = self.create_masks(x_seq_past, pad_mask)
+        else:
+            mask = pad_mask
         ###########
         x_pos_embed = self.pos_embed(x_seq_past[:, :, 0])
         x_seq_past_items = self.embed_items(x_seq_past[:, :, 0])
@@ -130,9 +133,14 @@ class ModelBert4Rec(tf.keras.models.Model):
         x = x_seq_past_items * (x_ones + x_seq_past_type + x_seq_time_encoding)
         x = x + x_pos_embed
         for i in range(len(self.list_transformer_block)):
-            x = self.list_transformer_block[i](x, x, training=training, attention_mask=pad_mask)
+            x = self.list_transformer_block[i](x, x, training=training, attention_mask=mask)
         probs = self.pred_layer(x)
         return probs
+
+    def create_masks(self, x_seq_past, pad_mask):   
+        size = self.model_cfg.seq_len
+        look_ahead_mask = tf.linalg.band_part(tf.ones((1, size, size), tf.float32), -1, 0) * pad_mask[:, 0, 0, :]
+        return look_ahead_mask#, pad_mask
       
 
 def build_model_bert4Rec(num_items, model_cfg):
