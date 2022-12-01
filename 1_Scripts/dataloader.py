@@ -164,6 +164,11 @@ class Bert4RecDataLoader:
             seq_type = seq_type[rand_idx:(rand_idx+self.seq_len), :]
             seq_time_encoding = seq_time_encoding[rand_idx:(rand_idx+self.seq_len), :]
             seq_recency = seq_recency[rand_idx:(rand_idx+self.seq_len), :]
+
+        # Check if all items are the same
+        uniques, idxs = tf.unique(seq_items[:, 0])
+        if tf.shape(uniques)[0]==1:
+            seq_items = tf.zeros(tf.shape(seq_items), seq_items.dtype)
         
         qt_size_seq = tf.shape(seq_items)[0]
 
