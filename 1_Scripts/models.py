@@ -93,10 +93,15 @@ class ModelBert4Rec(tf.keras.models.Model):
         )
         self.embed_type = tf.keras.layers.Embedding(
             3+1, 
-            model_cfg.emb_dim,
+            model_cfg.emb_dim // 4,
             embeddings_initializer=tf.keras.initializers.TruncatedNormal(mean=0, stddev=self.std_init)
         )
-        self.mlp_proj_time_encoding = tf.keras.models.Sequential([
+        # self.mlp_proj_time_encoding = tf.keras.models.Sequential([
+        #    tf.keras.layers.Dropout(model_cfg.drop_rate), 
+        #    tf.keras.layers.Dense(model_cfg.trf_dim, kernel_initializer=tf.keras.initializers.TruncatedNormal(mean=0, stddev=self.std_init)),
+        #    tf.keras.layers.LayerNormalization(epsilon=1e-6)
+        # ])
+        self.mlp_proj = tf.keras.models.Sequential([
            tf.keras.layers.Dropout(model_cfg.drop_rate), 
            tf.keras.layers.Dense(model_cfg.trf_dim, kernel_initializer=tf.keras.initializers.TruncatedNormal(mean=0, stddev=self.std_init)),
            tf.keras.layers.LayerNormalization(epsilon=1e-6)
@@ -125,13 +130,15 @@ class ModelBert4Rec(tf.keras.models.Model):
         x_pos_embed = self.pos_embed(x_seq_past[:, :, 0])
         x_seq_past_items = self.embed_items(x_seq_past[:, :, 0])
         x_seq_past_type = self.embed_type(x_seq_type[:, :, 0])
-        x_seq_time_encoding = self.mlp_proj_time_encoding(x_seq_encoding, training=training)
+        # x_seq_time_encoding = self.mlp_proj_time_encoding(x_seq_encoding, training=training)
+        x = tf.concat([x_seq_past_items, x_seq_past_type, x_seq_encoding], axis=-1)
+        x = self.mlp_proj(x, training=training)
         # x_seq_recency = self.mlp_proj_conts(x_seq_recency, training=training)
-        x_ones = tf.ones(tf.shape(x_seq_past_items))
+        # x_ones = tf.ones(tf.shape(x_seq_past_items))
         ########### 
         # x = x_seq_past_items * (x_ones + x_seq_past_type + x_seq_time_encoding + x_pos_embed)
-        x = x_seq_past_items * (x_ones + x_seq_past_type + x_seq_time_encoding)
-        x = x + x_pos_embed
+        # x = x_seq_past_items * (x_ones + x_seq_past_type + x_seq_time_encoding)
+        # x = x + x_pos_embed
         for i in range(len(self.list_transformer_block)):
             x = self.list_transformer_block[i](x, x, training=training, attention_mask=mask)
         probs = self.pred_layer(x)
