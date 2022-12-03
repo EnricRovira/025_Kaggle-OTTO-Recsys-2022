@@ -91,8 +91,8 @@ class Bert4RecDataLoader:
         seq_qt_events = dict_sequences['seq_qt_events']
         seq_items_target_raw, seq_type_target_raw =  dict_sequences['seq_aid_target'], dict_sequences['seq_type_target']
         session, qt_size_seq = dict_context['session'], dict_context['size_session']
-        seq_recency = self.normalize_features(seq_recency, stats=(3.4222, 1.6972))
-        seq_qt_events = self.normalize_features(seq_qt_events, stats=(1.1245, 0.5150))
+        seq_recency = self.normalize_features(seq_recency, stats=(3.904908, 1.763647))
+        seq_qt_events = self.normalize_features(seq_qt_events, stats=(1.132127, 0.529691))
         ###
         # Build target
         seq_items, seq_target = seq_items, seq_items_target_raw[:1] if not self.get_session else seq_items_target_raw[:self.seq_len_target]
@@ -127,8 +127,8 @@ class Bert4RecDataLoader:
         seq_items, seq_type, seq_time_encoding, seq_recency = dict_sequences['seq_aid'], dict_sequences['seq_type'], dict_sequences['seq_time_encoding'], dict_sequences['seq_recency_aid']
         seq_qt_events = dict_sequences['seq_qt_events']
         session, qt_size_seq = dict_context['session'], dict_context['size_session']
-        seq_recency = self.normalize_features(seq_recency, stats=(3.4222, 1.6972))
-        seq_qt_events = self.normalize_features(seq_qt_events, stats=(1.1245, 0.5150))
+        seq_recency = self.normalize_features(seq_recency, stats=(3.904908, 1.763647))
+        seq_qt_events = self.normalize_features(seq_qt_events, stats=(1.132127, 0.529691))
         ###
         seq_items = seq_items[-self.seq_len:, :]
         seq_type = seq_type[-self.seq_len:, :]
@@ -158,8 +158,8 @@ class Bert4RecDataLoader:
         seq_items, seq_type, seq_time_encoding, seq_recency =  dict_sequences['seq_aid'], dict_sequences['seq_type'], dict_sequences['seq_time_encoding'], dict_sequences['seq_recency_aid']
         seq_qt_events = dict_sequences['seq_qt_events']
         qt_size_seq = dict_context['size_session']
-        seq_recency = self.normalize_features(seq_recency, stats=(3.4222, 1.6972))
-        seq_qt_events = self.normalize_features(seq_qt_events, stats=(1.1245, 0.5150))
+        seq_recency = self.normalize_features(seq_recency, stats=(3.904908, 1.763647))
+        seq_qt_events = self.normalize_features(seq_qt_events, stats=(1.132127, 0.529691))
         ### 
         # With prob reverse
         if tf.random.uniform(shape=(1,1)) <= self.reverse_prob:
