@@ -127,7 +127,7 @@ class ModelBert4Rec(tf.keras.models.Model):
         x_seq_past_items = self.embed_items(x_seq_past[:, :, 0])
         x_seq_past_type = self.embed_type(x_seq_type[:, :, 0])
         x_seq_time_encoding = self.mlp_proj_time_encoding(x_seq_encoding, training=training)
-        x_conts = self.mlp_proj_conts(x_seq_qt_events, training=training)
+        x_conts = self.mlp_proj_conts(tf.concat([x_seq_qt_events, x_seq_recency], axis=-1), training=training)
         x_ones = tf.ones(tf.shape(x_seq_past_items))
         ########### 
         # x = x_seq_past_items * (x_ones + x_seq_past_type + x_seq_time_encoding + x_pos_embed)
