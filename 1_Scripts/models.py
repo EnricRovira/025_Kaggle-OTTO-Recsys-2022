@@ -102,16 +102,11 @@ class ModelBert4Rec(tf.keras.models.Model):
            tf.keras.layers.Dense(model_cfg.trf_dim, kernel_initializer=tf.keras.initializers.TruncatedNormal(mean=0, stddev=self.std_init)),
            tf.keras.layers.LayerNormalization(epsilon=1e-6)
         ])
-        # self.mlp_proj = tf.keras.models.Sequential([
-        #    tf.keras.layers.Dropout(model_cfg.drop_rate), 
-        #    tf.keras.layers.Dense(model_cfg.trf_dim, kernel_initializer=tf.keras.initializers.TruncatedNormal(mean=0, stddev=self.std_init)),
-        #    tf.keras.layers.LayerNormalization(epsilon=1e-6)
-        # ])
-        # self.mlp_proj_conts = tf.keras.models.Sequential([
-        #    tf.keras.layers.Dropout(model_cfg.drop_rate), 
-        #    tf.keras.layers.Dense(model_cfg.trf_dim, kernel_initializer=tf.keras.initializers.TruncatedNormal(mean=0, stddev=self.std_init)),
-        #    tf.keras.layers.LayerNormalization(epsilon=1e-6)
-        # ])
+        self.mlp_proj_conts = tf.keras.models.Sequential([
+           tf.keras.layers.Dropout(model_cfg.drop_rate), 
+           tf.keras.layers.Dense(model_cfg.trf_dim, kernel_initializer=tf.keras.initializers.TruncatedNormal(mean=0, stddev=self.std_init)),
+           tf.keras.layers.LayerNormalization(epsilon=1e-6)
+        ])
         self.list_transformer_block = [EncoderTransformerBlock(model_cfg.trf_dim, model_cfg.num_heads, 
                                                                model_cfg.ff_dim, attention_axes=None, 
                                                                drop_rate=model_cfg.drop_rate, 
@@ -121,7 +116,7 @@ class ModelBert4Rec(tf.keras.models.Model):
 
         
     def call(self, inputs, training=True):
-        x_seq_past, x_seq_type, x_seq_encoding, x_seq_recency = inputs
+        x_seq_past, x_seq_type, x_seq_encoding, x_seq_qt_events, x_seq_recency = inputs
         pad_mask = tf.cast(tf.where(tf.equal(x_seq_type[:, :, 0], 0), 0, 1), tf.float32)[:, tf.newaxis, tf.newaxis, :]
         if self.model_cfg.model_arch == 'sasrec':
             mask = self.create_masks(x_seq_past, pad_mask)
@@ -132,13 +127,11 @@ class ModelBert4Rec(tf.keras.models.Model):
         x_seq_past_items = self.embed_items(x_seq_past[:, :, 0])
         x_seq_past_type = self.embed_type(x_seq_type[:, :, 0])
         x_seq_time_encoding = self.mlp_proj_time_encoding(x_seq_encoding, training=training)
-        # x = tf.concat([x_seq_past_items, x_seq_past_type, x_seq_encoding], axis=-1)
-        # x = self.mlp_proj(x, training=training)
-        # x_seq_recency = self.mlp_proj_conts(x_seq_recency, training=training)
+        x_conts = self.mlp_proj_conts(x_seq_qt_events, training=training)
         x_ones = tf.ones(tf.shape(x_seq_past_items))
         ########### 
         # x = x_seq_past_items * (x_ones + x_seq_past_type + x_seq_time_encoding + x_pos_embed)
-        x = x_seq_past_items * (x_ones + x_seq_past_type + x_seq_time_encoding + x_pos_embed)
+        x = x_seq_past_items * (x_ones + x_seq_past_type + x_seq_time_encoding + x_conts + x_pos_embed)
         for i in range(len(self.list_transformer_block)):
             x = self.list_transformer_block[i](x, x, training=training, attention_mask=mask)
         probs = self.pred_layer(x)
@@ -152,3 +145,4 @@ class ModelBert4Rec(tf.keras.models.Model):
 
 def build_model_bert4Rec(num_items, model_cfg):
     return ModelBert4Rec(num_items, model_cfg)
+

@@ -54,6 +54,7 @@ class Bert4RecDataLoader:
             features_seq = {
                 "seq_aid" : tf.io.FixedLenSequenceFeature(shape=[1], dtype=tf.int64, allow_missing=False),
                 "seq_type": tf.io.FixedLenSequenceFeature(shape=[1], dtype=tf.int64, allow_missing=False),
+                "seq_qt_events": tf.io.FixedLenSequenceFeature(shape=[1], dtype=tf.int64, allow_missing=False),
                 "seq_time_encoding": tf.io.FixedLenSequenceFeature(shape=[8], dtype=tf.float32, allow_missing=False),
                 "seq_recency_aid": tf.io.FixedLenSequenceFeature(shape=[1], dtype=tf.float32, allow_missing=False)
             }
@@ -61,6 +62,7 @@ class Bert4RecDataLoader:
             features_seq = {
                 "seq_aid" : tf.io.FixedLenSequenceFeature(shape=[1], dtype=tf.int64, allow_missing=False),
                 "seq_type": tf.io.FixedLenSequenceFeature(shape=[1], dtype=tf.int64, allow_missing=False),
+                "seq_qt_events": tf.io.FixedLenSequenceFeature(shape=[1], dtype=tf.int64, allow_missing=False),
                 "seq_aid_target" : tf.io.FixedLenSequenceFeature(shape=[1], dtype=tf.int64, allow_missing=False),
                 "seq_type_target": tf.io.FixedLenSequenceFeature(shape=[1], dtype=tf.int64, allow_missing=False),
                 "seq_time_encoding": tf.io.FixedLenSequenceFeature(shape=[8], dtype=tf.float32, allow_missing=False),
@@ -86,9 +88,11 @@ class Bert4RecDataLoader:
 
     def make_transforms_val(self, dict_context, dict_sequences):
         seq_items, seq_type, seq_time_encoding, seq_recency =  dict_sequences['seq_aid'], dict_sequences['seq_type'], dict_sequences['seq_time_encoding'], dict_sequences['seq_recency_aid']
+        seq_qt_events = dict_sequences['seq_qt_events']
         seq_items_target_raw, seq_type_target_raw =  dict_sequences['seq_aid_target'], dict_sequences['seq_type_target']
         session, qt_size_seq = dict_context['session'], dict_context['size_session']
-        seq_recency = self.normalize_features(seq_recency)
+        seq_recency = self.normalize_features(seq_recency, stats=(3.4222, 1.6972))
+        seq_qt_events = self.normalize_features(seq_qt_events, stats=(1.1245, 0.5150))
         ###
         # Build target
         seq_items, seq_target = seq_items, seq_items_target_raw[:1] if not self.get_session else seq_items_target_raw[:self.seq_len_target]
@@ -99,12 +103,14 @@ class Bert4RecDataLoader:
         #Mask last position
         seq_items = tf.concat([seq_items, tf.zeros((1, tf.shape(seq_items)[1]), tf.int64)], axis=0)
         seq_type = tf.concat([seq_type, seq_type_target[:1]], axis=0)
+        seq_qt_events = tf.concat([seq_qt_events, tf.zeros((1, tf.shape(seq_qt_events)[1]), tf.float32)], axis=0)
         seq_time_encoding = tf.concat([seq_time_encoding, tf.zeros((1, tf.shape(seq_time_encoding)[1]), tf.float32)], axis=0)
         seq_recency = tf.concat([seq_recency, tf.zeros((1, tf.shape(seq_recency)[1]), tf.float32)], axis=0)
         ###
-        idx_masked = tf.clip_by_value(tf.shape(seq_items)[0], 0, self.seq_len-1)
+        idx_masked = tf.clip_by_value(tf.shape(seq_items)[0]-1, 0, self.seq_len-1)
         seq_items, _ = self.pad_sequence(seq_items, maxlen=self.seq_len, return_pad_mask=True, dtype=tf.int64)
         seq_type = self.pad_sequence(seq_type, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.int64)
+        seq_qt_events = self.pad_sequence(seq_qt_events, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)
         seq_time_encoding = self.pad_sequence(seq_time_encoding, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)  
         seq_recency = self.pad_sequence(seq_recency, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)  
         seq_items_target = self.pad_sequence(seq_items_target, maxlen=self.seq_len_target, return_pad_mask=False, dtype=tf.int64)  
@@ -113,45 +119,53 @@ class Bert4RecDataLoader:
         if self.get_session:
             seq_items_target_all = self.pad_sequence(seq_items_target_raw[:self.seq_len_target], maxlen=self.seq_len_target, return_pad_mask=False, dtype=tf.int64)  
             seq_type_target_all = self.pad_sequence(seq_type_target_raw[:self.seq_len_target], maxlen=self.seq_len_target, return_pad_mask=False, dtype=tf.int64) 
-            return (seq_items, seq_type, seq_time_encoding, seq_recency), (seq_items_target_all[:, 0], seq_type_target_all[:, 0], idx_masked), session
+            return (seq_items, seq_type, seq_time_encoding, seq_qt_events, seq_recency), (seq_items_target_all[:, 0], seq_type_target_all[:, 0], idx_masked), session
 
-        return (seq_items, seq_type, seq_time_encoding, seq_recency), seq_items_target[:, 0]
+        return (seq_items, seq_type, seq_time_encoding, seq_qt_events, seq_recency), seq_items_target[:, 0]
 
     def make_transforms_test(self, dict_context, dict_sequences):
-        seq_items, seq_type, seq_time_encoding, seq_recency =  dict_sequences['seq_aid'], dict_sequences['seq_type'], dict_sequences['seq_time_encoding'], dict_sequences['seq_recency_aid']
+        seq_items, seq_type, seq_time_encoding, seq_recency = dict_sequences['seq_aid'], dict_sequences['seq_type'], dict_sequences['seq_time_encoding'], dict_sequences['seq_recency_aid']
+        seq_qt_events = dict_sequences['seq_qt_events']
         session, qt_size_seq = dict_context['session'], dict_context['size_session']
-        seq_recency = self.normalize_features(seq_recency)
+        seq_recency = self.normalize_features(seq_recency, stats=(3.4222, 1.6972))
+        seq_qt_events = self.normalize_features(seq_qt_events, stats=(1.1245, 0.5150))
         ###
         seq_items = seq_items[-self.seq_len:, :]
         seq_type = seq_type[-self.seq_len:, :]
+        seq_qt_events = seq_qt_events[-self.seq_len:, :]
         seq_time_encoding = seq_time_encoding[-self.seq_len:, :]
         seq_recency = seq_recency[-self.seq_len:, :]
-        idx_masked = tf.clip_by_value(tf.shape(seq_items)[0], 0, self.seq_len-1)
+        idx_masked = tf.clip_by_value(tf.shape(seq_items)[0]-1, 0, self.seq_len-1)
         # Mask last position
         seq_items = tf.concat([seq_items, tf.zeros((1, tf.shape(seq_items)[1]), tf.int64)], axis=0)
         seq_type = tf.concat([seq_type, tf.zeros((1, tf.shape(seq_type)[1]), tf.int64)], axis=0)
+        seq_qt_events = tf.concat([seq_qt_events, tf.zeros((1, tf.shape(seq_qt_events)[1]), tf.float32)], axis=0)
         seq_time_encoding = tf.concat([seq_time_encoding, tf.zeros((1, tf.shape(seq_time_encoding)[1]), tf.float32)], axis=0)
         seq_recency = tf.concat([seq_recency, tf.zeros((1, tf.shape(seq_recency)[1]), tf.float32)], axis=0)
         ###
         seq_items, _ = self.pad_sequence(seq_items, maxlen=self.seq_len, return_pad_mask=True, dtype=tf.int64)
         seq_type = self.pad_sequence(seq_type, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.int64)
+        seq_qt_events = self.pad_sequence(seq_qt_events, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)
         seq_time_encoding = self.pad_sequence(seq_time_encoding, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)   
         seq_recency = self.pad_sequence(seq_recency, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)   
         if self.get_session:
-            return (seq_items, seq_type, seq_time_encoding, seq_recency), idx_masked, session
+            return (seq_items, seq_type, seq_time_encoding, seq_qt_events, seq_recency), idx_masked, session
 
-        return (seq_items, seq_type, seq_time_encoding, seq_recency), idx_masked
+        return (seq_items, seq_type, seq_time_encoding, seq_qt_events, seq_recency), idx_masked
 
   
     def make_transforms_train(self, dict_context, dict_sequences):
         seq_items, seq_type, seq_time_encoding, seq_recency =  dict_sequences['seq_aid'], dict_sequences['seq_type'], dict_sequences['seq_time_encoding'], dict_sequences['seq_recency_aid']
+        seq_qt_events = dict_sequences['seq_qt_events']
         qt_size_seq = dict_context['size_session']
-        seq_recency = self.normalize_features(seq_recency)
+        seq_recency = self.normalize_features(seq_recency, stats=(3.4222, 1.6972))
+        seq_qt_events = self.normalize_features(seq_qt_events, stats=(1.1245, 0.5150))
         ### 
         # With prob reverse
         if tf.random.uniform(shape=(1,1)) <= self.reverse_prob:
             seq_items = tf.reverse(seq_items, axis=[0])
             seq_type = tf.reverse(seq_type, axis=[0])
+            seq_qt_events = tf.reverse(seq_qt_events, axis=[0])
             seq_time_encoding = tf.reverse(seq_time_encoding, axis=[0])
             seq_recency = tf.reverse(seq_recency, axis=[0])
             
@@ -162,12 +176,13 @@ class Bert4RecDataLoader:
             rand_idx = tf.random.shuffle(idx_list)[0]
             seq_items = seq_items[rand_idx:(rand_idx+self.seq_len), :]
             seq_type = seq_type[rand_idx:(rand_idx+self.seq_len), :]
+            seq_qt_events = seq_qt_events[rand_idx:(rand_idx+self.seq_len), :]
             seq_time_encoding = seq_time_encoding[rand_idx:(rand_idx+self.seq_len), :]
             seq_recency = seq_recency[rand_idx:(rand_idx+self.seq_len), :]
 
         # Check if all items are the same
         uniques, idxs = tf.unique(seq_items[:, 0])
-        if tf.shape(uniques)[0]==1:
+        if tf.shape(uniques)[0]==1 and tf.shape(seq_items)[0] >= 4:
             seq_items = tf.zeros(tf.shape(seq_items), seq_items.dtype)
         
         qt_size_seq = tf.shape(seq_items)[0]
@@ -191,13 +206,13 @@ class Bert4RecDataLoader:
         # Mask inputs and targets
         seq_items_raw = seq_items
         updates_items = tf.zeros((len(idxs_inputs), seq_items.shape[-1]), tf.int64)
-        # updates_type = tf.zeros((len(idxs_inputs), seq_type.shape[-1]), tf.int64)
+        updates_qt_events = tf.zeros((len(idxs_inputs), seq_qt_events.shape[-1]), tf.float32) 
         updates_time_encoding = tf.zeros((len(idxs_inputs), seq_time_encoding.shape[-1]), tf.float32)
         updates_recency = tf.zeros((len(idxs_inputs), seq_recency.shape[-1]), tf.float32)
         updates_target = tf.zeros((len(idxs_target), seq_items_raw.shape[-1]), tf.int64)
         
         seq_items = tf.tensor_scatter_nd_update(seq_items, idxs_inputs, updates_items)
-        # seq_type = tf.tensor_scatter_nd_update(seq_type, idxs_inputs, updates_type)
+        seq_qt_events = tf.tensor_scatter_nd_update(seq_qt_events, idxs_inputs, updates_qt_events)
         seq_time_encoding = tf.tensor_scatter_nd_update(seq_time_encoding, idxs_inputs, updates_time_encoding)
         seq_recency = tf.tensor_scatter_nd_update(seq_recency, idxs_inputs, updates_recency)
         seq_target = tf.tensor_scatter_nd_update(seq_items_raw, idxs_target, updates_target)
@@ -205,14 +220,17 @@ class Bert4RecDataLoader:
         # Padding
         seq_items, pad_mask = self.pad_sequence(seq_items, maxlen=self.seq_len, return_pad_mask=True, dtype=tf.int64)
         seq_type = self.pad_sequence(seq_type, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.int64)
+        seq_qt_events = self.pad_sequence(seq_qt_events, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)
         seq_time_encoding = self.pad_sequence(seq_time_encoding, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32) 
         seq_recency = self.pad_sequence(seq_recency, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)  
         seq_target = self.pad_sequence(seq_target, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.int64)  
 
-        return (seq_items, seq_type, seq_time_encoding, seq_recency), seq_target[:, 0]
+        return (seq_items, seq_type, seq_time_encoding, seq_qt_events, seq_recency), seq_target[:, 0]
   
-    def normalize_features(self, features):
-        return (features - tf.constant(5.45)/tf.constant(1.09))
+    def normalize_features(self, features, stats):
+        mean, std = stats
+        features = tf.cast(features, tf.float32)
+        return (features - tf.constant(mean)/tf.constant(std))
 
     # def normalize_features(self, features, targets=None, session=None):
     #     seq_items, seq_type, seq_time_encoding, seq_recency = features
@@ -328,6 +346,7 @@ class SASRecDataLoader:
         seq_type_target = tf.concat([seq_type, seq_type_target], axis=0)
         ###
         ###
+        idx_masked = tf.clip_by_value(tf.shape(seq_items)[0]-1, 0, self.seq_len-1)
         seq_items, pad_mask = self.pad_sequence(seq_items, maxlen=self.seq_len, return_pad_mask=True, dtype=tf.int64)
         seq_type = self.pad_sequence(seq_type, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.int64)
         seq_time_encoding = self.pad_sequence(seq_time_encoding, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)  
@@ -338,7 +357,7 @@ class SASRecDataLoader:
         if self.get_session:
             seq_items_target_all = self.pad_sequence(seq_items_target_raw[:self.seq_len_target], maxlen=self.seq_len_target, return_pad_mask=False, dtype=tf.int64)  
             seq_type_target_all = self.pad_sequence(seq_type_target_raw[:self.seq_len_target], maxlen=self.seq_len_target, return_pad_mask=False, dtype=tf.int64) 
-            return (seq_items, seq_type, seq_time_encoding, seq_recency), (seq_items_target_all[:, 0], seq_type_target_all[:, 0], pad_mask), session
+            return (seq_items, seq_type, seq_time_encoding, seq_recency), (seq_items_target_all[:, 0], seq_type_target_all[:, 0], idx_masked), session
 
         return (seq_items, seq_type, seq_time_encoding, seq_recency), seq_items_target[:, 0]
 
@@ -353,14 +372,15 @@ class SASRecDataLoader:
         seq_recency = seq_recency[-self.seq_len:, :]
         # Padding
         ###
+        idx_masked = tf.clip_by_value(tf.shape(seq_items)[0]-1, 0, self.seq_len-1)
         seq_items, pad_mask = self.pad_sequence(seq_items, maxlen=self.seq_len, return_pad_mask=True, dtype=tf.int64)
         seq_type = self.pad_sequence(seq_type, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.int64)
         seq_time_encoding = self.pad_sequence(seq_time_encoding, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)   
         seq_recency = self.pad_sequence(seq_recency, maxlen=self.seq_len, return_pad_mask=False, dtype=tf.float32)   
         if self.get_session:
-            return (seq_items, seq_type, seq_time_encoding, seq_recency), tf.zeros(tf.shape(seq_items)), session
+            return (seq_items, seq_type, seq_time_encoding, seq_recency), idx_masked, session
 
-        return (seq_items, seq_type, seq_time_encoding, seq_recency), tf.zeros(tf.shape(seq_items))
+        return (seq_items, seq_type, seq_time_encoding, seq_recency), idx_masked
 
   
     def make_transforms_train(self, dict_context, dict_sequences):
