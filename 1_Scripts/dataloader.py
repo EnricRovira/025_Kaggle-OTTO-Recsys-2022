@@ -7,7 +7,7 @@ class Bert4RecDataLoader:
     """
     Class that iterates over tfrecords in order to get the sequences.
     """
-    def __init__(self, list_paths, num_items, seq_len, batch_size, num_targets=-1, mask_prob=0.4, 
+    def __init__(self, list_paths, num_items, seq_len, batch_size, num_targets=-1, alpha=1., mask_prob=0.4, 
                  reverse_prob=0.2, get_session=False, get_only_first_on_val=False, seq_len_target=None,
                  min_size_seq_to_mask=2, is_val=False, is_test=False, avoid_repeats=False, shuffle=False, drop_remainder=False):
         self.list_paths = list_paths
@@ -15,6 +15,7 @@ class Bert4RecDataLoader:
         self.seq_len = seq_len
         self.batch_size = batch_size
         self.num_targets = num_targets
+        self.alpha = alpha
         self.mask_prob = mask_prob
         self.reverse_prob = tf.constant(reverse_prob)
         self.shuffle = shuffle
@@ -188,20 +189,7 @@ class Bert4RecDataLoader:
         qt_size_seq = tf.shape(seq_items)[0]
 
         ## Get idxs to mask for inputs and targets
-        probs = tf.random.uniform(shape=(qt_size_seq,), minval=0, maxval=1)
-        idxs_inputs = tf.cast(tf.where(probs >= (1-self.mask_prob)), tf.int64) # -> we mask to zero the inputs as we dont want to leak 
-        idxs_target = tf.cast(tf.where(probs < (1-self.mask_prob)), tf.int64) # -> we mask to zero the targets as the loss will only be applied on non zero
-
-        # If all items are masked we leave an item unmasked
-        if tf.cast(tf.shape(idxs_inputs)[0], tf.int64) == tf.cast(qt_size_seq, tf.int64):
-            idxs_target = idxs_inputs[-1:]
-            idxs_inputs = idxs_inputs[:-1]
-            
-        # If no item has been masked we leave at least one item masked(be careful of size=1 seqs)
-        if tf.cast(tf.shape(idxs_inputs)[0], tf.int64) == tf.constant(0, dtype=tf.int64):
-            all_idxs = tf.cast(tf.random.shuffle(tf.range(0, qt_size_seq)), dtype=tf.int64)
-            idxs_inputs = all_idxs[:1][:, tf.newaxis]
-            idxs_target = all_idxs[1:][:, tf.newaxis]
+        idxs_inputs, idxs_target = self.mask_indexes(qt_size_seq)
 
         # Mask inputs and targets
         seq_items_raw = seq_items
@@ -232,11 +220,31 @@ class Bert4RecDataLoader:
         features = tf.cast(features, tf.float32)
         return (features - tf.constant(mean)/tf.constant(std))
 
-    # def normalize_features(self, features, targets=None, session=None):
-    #     seq_items, seq_type, seq_time_encoding, seq_recency = features
-    #     seq_recency = (seq_recency - tf.constant(5.45)/tf.constant(1.09))
-    #     features = (seq_items, seq_type, seq_time_encoding, seq_recency)
-    #     return features, targets, session
+    def mask_indexes(self, qt_size_seq):
+        num_to_mask = tf.clip_by_value(tf.cast(tf.round(tf.cast(qt_size_seq, tf.float32) * self.mask_prob), tf.int32), 1, self.seq_len-1)
+        probs_recency = self.alpha ** (tf.cast(qt_size_seq, tf.float32)-tf.range(qt_size_seq, dtype=tf.float32))
+        probs_rndm = tf.random.uniform(shape=(qt_size_seq,), minval=0, maxval=1)
+        if self.alpha==1:
+            idxs_inputs = tf.cast(tf.where(probs_rndm >= (1-self.mask_prob)), tf.int64) # -> we mask to zero the inputs as we dont want to leak 
+            idxs_target = tf.cast(tf.where(probs_rndm < (1-self.mask_prob)), tf.int64) # -> we mask to zero the targets as the loss will only be applied on non zero
+
+            # If all items are masked we leave an item unmasked
+            if tf.cast(tf.shape(idxs_inputs)[0], tf.int64) == tf.cast(qt_size_seq, tf.int64):
+                idxs_target = idxs_inputs[-1:]
+                idxs_inputs = idxs_inputs[:-1]
+
+            # If no item has been masked we leave at least one item masked(be careful of size=1 seqs)
+            if tf.cast(tf.shape(idxs_inputs)[0], tf.int64) == tf.constant(0, dtype=tf.int64):
+                all_idxs = tf.cast(tf.random.shuffle(tf.range(0, qt_size_seq)), dtype=tf.int64)
+                idxs_inputs = all_idxs[:1][:, tf.newaxis]
+                idxs_target = all_idxs[1:][:, tf.newaxis]
+        else:
+            probs = probs_recency * probs_rndm
+            idxs = tf.argsort(probs, direction='DESCENDING')
+            idxs_inputs = tf.cast(idxs[:num_to_mask][:, tf.newaxis], tf.int64)
+            idxs_target = tf.cast(idxs[num_to_mask:][:, tf.newaxis], tf.int64)
+            
+        return idxs_inputs, idxs_target
 
     def set_shapes(self, features, targets=None, session=None):
         features[0].set_shape((self.seq_len, 1))
